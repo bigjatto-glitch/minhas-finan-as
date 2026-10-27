@@ -35,6 +35,47 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
+  <!-- Modal de Autenticação (Login / Cadastro) -->
+  <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 sm:p-8 transition-all">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <i class="fa-solid fa-lock text-xl"></i>
+        </div>
+        <h2 id="authTitle" class="text-xl font-bold text-slate-800">Acessar Controle Financeiro</h2>
+        <p id="authSubtitle" class="text-xs text-slate-500 mt-1">Entre com seus dados para gerenciar seu orçamento</p>
+      </div>
+
+      <!-- Formulário de Login / Registro -->
+      <form id="authForm" class="space-y-4">
+        <!-- Campo Nome (Apenas visível no cadastro) -->
+        <div id="nameGroup" class="hidden">
+          <label for="authName" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nome Completo</label>
+          <input type="text" id="authName" placeholder="Seu nome" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+        </div>
+
+        <div>
+          <label for="authUsername" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Usuário / E-mail</label>
+          <input type="text" id="authUsername" required placeholder="Digite seu usuário" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+        </div>
+
+        <div>
+          <label for="authPassword" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Senha</label>
+          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+        </div>
+
+        <button type="submit" id="btnAuthSubmit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition shadow-sm shadow-indigo-200 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar
+        </button>
+      </form>
+
+      <div class="mt-6 text-center text-xs text-slate-500">
+        <span id="authToggleText">Ainda não possui uma conta?</span>
+        <button id="btnToggleAuth" type="button" class="text-indigo-600 font-semibold hover:underline ml-1">Cadastrar-se</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Header / Navbar -->
   <header class="bg-indigo-600 text-white shadow-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -48,6 +89,12 @@
         </div>
       </div>
       <div class="flex items-center space-x-2">
+        <!-- Perfil do Usuário e Logout -->
+        <div id="userInfoContainer" class="hidden items-center gap-2 mr-2 bg-indigo-700/60 px-3 py-1.5 rounded-xl border border-indigo-500/30">
+          <i class="fa-solid fa-circle-user text-indigo-200 text-lg"></i>
+          <span id="lblUsername" class="text-xs font-semibold text-white">Usuário</span>
+        </div>
+
         <button id="btnExport" class="bg-indigo-500 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
           <i class="fa-solid fa-file-export"></i>
           <span class="hidden md:inline">Exportar JSON</span>
@@ -56,12 +103,16 @@
           <i class="fa-solid fa-trash-can"></i>
           <span class="hidden md:inline">Limpar Tudo</span>
         </button>
+        <button id="btnLogout" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span class="hidden md:inline">Sair</span>
+        </button>
       </div>
     </div>
   </header>
 
   <!-- Conteúdo Principal -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+  <main id="appContent" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full opacity-30 pointer-events-none transition-all duration-300">
     
     <!-- Cards de Resumo -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -102,7 +153,7 @@
     <!-- Grid Central: Form/Filtros + Gráficos -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
       
-      <!-- Formulário de Nova Transação (Col 12 -> 4 em lg) -->
+      <!-- Formulário de Nova Transação -->
       <div class="lg:col-span-4 bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
         <div>
           <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -151,18 +202,18 @@
             <div>
               <label for="category" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Categoria</label>
               <select id="category" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition bg-white">
-                <!-- Opções renderizadas via JS conforme o tipo selecionado -->
+                <!-- Opções renderizadas via JS -->
               </select>
             </div>
 
             <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm transition shadow-sm shadow-indigo-200 flex items-center justify-center gap-2">
-              <i class="fa-solid fa-check"></i> Adicionar Registo
+              <i class="fa-solid fa-check"></i> Adicionar Registro
             </button>
           </form>
         </div>
       </div>
 
-      <!-- Gráficos Visualizadores (Col 12 -> 8 em lg) -->
+      <!-- Gráficos Visualizadores -->
       <div class="lg:col-span-8 space-y-6">
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
@@ -281,10 +332,29 @@
     };
 
     // Estado da aplicação
+    let currentUser = null;
+    let isRegisterMode = false;
     let transactions = [];
     let chartInstance = null;
 
-    // Elementos DOM
+    // Elementos DOM de Autenticação
+    const authModal = document.getElementById('authModal');
+    const authForm = document.getElementById('authForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const authUsername = document.getElementById('authUsername');
+    const authPassword = document.getElementById('authPassword');
+    const authName = document.getElementById('authName');
+    const nameGroup = document.getElementById('nameGroup');
+    const btnAuthSubmit = document.getElementById('btnAuthSubmit');
+    const btnToggleAuth = document.getElementById('btnToggleAuth');
+    const authToggleText = document.getElementById('authToggleText');
+    const appContent = document.getElementById('appContent');
+    const userInfoContainer = document.getElementById('userInfoContainer');
+    const lblUsername = document.getElementById('lblUsername');
+    const btnLogout = document.getElementById('btnLogout');
+
+    // Elementos DOM Gerais
     const form = document.getElementById('transactionForm');
     const descInput = document.getElementById('desc');
     const amountInput = document.getElementById('amount');
@@ -309,20 +379,25 @@
 
     // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
+      // Garantir que o usuário admin padrão exista
+      initAdminUser();
+
       // Definir data atual como default
       dateInput.value = new Date().toISOString().split('T')[0];
 
-      // Carregar dados salvos ou exemplos
-      loadTransactions();
-      
       // Atualizar lista de categorias no form e filtros
       updateCategorySelectOptions();
       populateFilterCategories();
 
-      // Renderizar interface
-      renderApp();
+      // Verificar Sessão Ativa
+      checkActiveSession();
 
-      // Listeners de Eventos
+      // Listeners de Eventos do Auth
+      authForm.addEventListener('submit', handleAuthSubmit);
+      btnToggleAuth.addEventListener('click', toggleAuthMode);
+      btnLogout.addEventListener('click', handleLogout);
+
+      // Listeners de Eventos da Aplicação
       form.addEventListener('submit', handleAddTransaction);
       
       typeRadios.forEach(radio => {
@@ -342,30 +417,166 @@
       btnExport.addEventListener('click', handleExportData);
     });
 
-    // Atualiza o combo box de categorias no formulário com base no Tipo selecionado
-    function updateCategorySelectOptions() {
-      const selectedType = Array.from(typeRadios).find(r => r.checked).value;
-      const cats = CATEGORIES[selectedType];
+    // Garante que a conta 'admin' com a senha '1234' exista no sistema
+    function initAdminUser() {
+      const users = JSON.parse(localStorage.getItem('domestico_users') || '{}');
+      if (!users['admin']) {
+        users['admin'] = {
+          name: 'Administrador',
+          username: 'admin',
+          password: '1234'
+        };
+        localStorage.setItem('domestico_users', JSON.stringify(users));
+
+        // Inicializar com dados iniciais de demonstração para o admin
+        if (!localStorage.getItem('domestico_transactions_admin')) {
+          localStorage.setItem('domestico_transactions_admin', JSON.stringify(getMockData()));
+        }
+      }
+    }
+
+    // SISTEMA DE AUTENTICAÇÃO E SESSÃO
+    function checkActiveSession() {
+      const savedSession = localStorage.getItem('domestico_session');
+      if (savedSession) {
+        try {
+          currentUser = JSON.parse(savedSession);
+          showApp();
+          return;
+        } catch (e) {
+          currentUser = null;
+        }
+      }
+      showAuthModal();
+    }
+
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      if (isRegisterMode) {
+        authTitle.textContent = 'Criar Nova Conta';
+        authSubtitle.textContent = 'Cadastre-se para proteger suas finanças';
+        nameGroup.classList.remove('hidden');
+        btnAuthSubmit.innerHTML = '<i class="fa-solid fa-user-plus"></i> Cadastrar';
+        authToggleText.textContent = 'Já possui uma conta?';
+        btnToggleAuth.textContent = 'Entrar';
+      } else {
+        authTitle.textContent = 'Acessar Controle Financeiro';
+        authSubtitle.textContent = 'Entre com seus dados para gerenciar seu orçamento';
+        nameGroup.classList.add('hidden');
+        btnAuthSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+        authToggleText.textContent = 'Ainda não possui uma conta?';
+        btnToggleAuth.textContent = 'Cadastrar-se';
+      }
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const username = authUsername.value.trim().toLowerCase();
+      const password = authPassword.value.trim();
+      const name = authName.value.trim();
+
+      if (!username || !password) {
+        showToast('Preencha usuário e senha.', 'error');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('domestico_users') || '{}');
+
+      if (isRegisterMode) {
+        if (!name) {
+          showToast('Preencha seu nome para o cadastro.', 'error');
+          return;
+        }
+        if (users[username]) {
+          showToast('Usuário já cadastrado. Escolha outro nome de usuário.', 'error');
+          return;
+        }
+
+        // Criar Novo Usuário
+        users[username] = {
+          name: name,
+          username: username,
+          password: password
+        };
+        localStorage.setItem('domestico_users', JSON.stringify(users));
+
+        // Inicializar com dados fictícios para o novo usuário
+        const initialMockData = getMockData();
+        localStorage.setItem(`domestico_transactions_${username}`, JSON.stringify(initialMockData));
+
+        currentUser = { username: username, name: name };
+        localStorage.setItem('domestico_session', JSON.stringify(currentUser));
+
+        showToast(`Conta criada com sucesso! Bem-vindo(a), ${name}!`, 'success');
+        showApp();
+      } else {
+        // Modo Login
+        const user = users[username];
+        if (!user || user.password !== password) {
+          showToast('Usuário ou senha incorretos.', 'error');
+          return;
+        }
+
+        currentUser = { username: user.username, name: user.name };
+        localStorage.setItem('domestico_session', JSON.stringify(currentUser));
+
+        showToast(`Bem-vindo(a) de volta, ${user.name}!`, 'success');
+        showApp();
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('domestico_session');
+      currentUser = null;
+      transactions = [];
+      showToast('Sessão encerrada com sucesso.', 'info');
+      showAuthModal();
+    }
+
+    function showAuthModal() {
+      authModal.classList.remove('hidden');
+      appContent.classList.add('opacity-30', 'pointer-events-none');
+      userInfoContainer.classList.add('hidden');
+      userInfoContainer.classList.remove('flex');
+
+      // Preencher formulário por padrão com usuário 'admin' e senha '1234' para agilizar
+      authUsername.value = 'admin';
+      authPassword.value = '1234';
+    }
+
+    function showApp() {
+      authModal.classList.add('hidden');
+      appContent.classList.remove('opacity-30', 'pointer-events-none');
       
-      categorySelect.innerHTML = cats.map(cat => 
-        `<option value="${cat.id}">${cat.name}</option>`
-      ).join('');
+      lblUsername.textContent = currentUser.name || currentUser.username;
+      userInfoContainer.classList.remove('hidden');
+      userInfoContainer.classList.add('flex');
+
+      loadTransactions();
+      renderApp();
     }
 
-    // Carrega o combo box do filtro de categorias
+    function updateCategorySelectOptions() {
+      const selectedType = Array.from(typeRadios).find(r => r.checked)?.value || 'expense';
+      const categories = CATEGORIES[selectedType] || [];
+      categorySelect.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
     function populateFilterCategories() {
-      const allCats = [...CATEGORIES.expense, ...CATEGORIES.income];
-      filterCategory.innerHTML = `<option value="all">Todas Categorias</option>` + 
-        allCats.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+      const allCategories = [...CATEGORIES.expense, ...CATEGORIES.income];
+      filterCategory.innerHTML = '<option value="all">Todas Categorias</option>' +
+        allCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     }
 
-    // Salvar e Carregar do LocalStorage
+    // Gerenciamento de Dados por Usuário
     function saveTransactions() {
-      localStorage.setItem('domestico_transactions', JSON.stringify(transactions));
+      if (!currentUser) return;
+      localStorage.setItem(`domestico_transactions_${currentUser.username}`, JSON.stringify(transactions));
     }
 
     function loadTransactions() {
-      const saved = localStorage.getItem('domestico_transactions');
+      if (!currentUser) return;
+      const saved = localStorage.getItem(`domestico_transactions_${currentUser.username}`);
       if (saved) {
         try {
           transactions = JSON.parse(saved);
@@ -373,7 +584,6 @@
           transactions = getMockData();
         }
       } else {
-        // Dados iniciais para visualização amigável na 1ª utilização
         transactions = getMockData();
         saveTransactions();
       }
@@ -456,11 +666,10 @@
       });
     }
 
-    // Renderizar aplicação (Totais, Tabela e Gráfico)
+    // Renderizar aplicação
     function renderApp() {
       const filtered = getFilteredTransactions();
 
-      // 1. Calcular Totais gerais (baseado em TODAS as transações para totalizadores corretos)
       let totalIncome = 0;
       let totalExpense = 0;
 
@@ -481,7 +690,6 @@
         lblBalance.className = 'text-2xl font-bold text-emerald-600 mt-1';
       }
 
-      // 2. Renderizar Tabela com Filtros
       if (filtered.length === 0) {
         transactionsList.innerHTML = '';
         emptyState.classList.remove('hidden');
@@ -518,11 +726,9 @@
         }).join('');
       }
 
-      // 3. Atualizar Gráfico
       updateChart();
     }
 
-    // Auxiliar: Encontrar metadados da categoria
     function findCategory(catId, type) {
       const list = CATEGORIES[type] || [...CATEGORIES.expense, ...CATEGORIES.income];
       const found = list.find(c => c.id === catId);
@@ -530,12 +736,10 @@
       return { name: catId, icon: 'fa-tag', color: '#64748b' };
     }
 
-    // Atualização do Gráfico Chart.js
     function updateChart() {
-      const selectedType = chartCategoryType.value; // 'expense' ou 'income'
+      const selectedType = chartCategoryType.value;
       const targetTransactions = transactions.filter(t => t.type === selectedType);
 
-      // Agrupar totais por categoria
       const categoryTotals = {};
       targetTransactions.forEach(t => {
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
@@ -559,7 +763,6 @@
       }
 
       if (dataValues.length === 0) {
-        // Exibir gráfico vazio quando sem dados
         chartInstance = new Chart(ctx, {
           type: 'doughnut',
           data: {
@@ -619,7 +822,6 @@
       });
     }
 
-    // Formatação de Valores
     function formatCurrency(val) {
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -633,21 +835,16 @@
       return `${day}/${month}/${year}`;
     }
 
-    // Ações Extras
     function handleResetData() {
-      // Confirmação via interface em vez de alert/confirm
       if (transactions.length === 0) {
         showToast('Não há dados para limpar.', 'info');
         return;
       }
       
-      const confirmReset = window.confirm ? confirm("Tem certeza de que deseja apagar todas as transações?") : true;
-      if (confirmReset) {
-        transactions = [];
-        saveTransactions();
-        renderApp();
-        showToast('Todos os dados foram excluídos com sucesso.', 'info');
-      }
+      transactions = [];
+      saveTransactions();
+      renderApp();
+      showToast('Todos os dados foram excluídos com sucesso.', 'info');
     }
 
     function handleExportData() {
@@ -665,7 +862,6 @@
       showToast('Dados exportados com sucesso!', 'success');
     }
 
-    // Toast Notification Feedback Customizado
     function showToast(message, type = 'success') {
       const toast = document.getElementById('toast');
       const toastMessage = document.getElementById('toastMessage');
